@@ -2,18 +2,36 @@
     <div class="h-screen bg-white dark:bg-[#191a19] text-gray-900 dark:text-gray-200 p-6">
         <form @submit.prevent="submit" class="max-w-2xl mx-auto">
             <div class="flex flex-col gap-4">
-                <!-- First Name -->
+                <!-- Full Name -->
                 <div class="flex flex-col gap-2">
-                    <label required>First Name</label>
-                    <input v-model="form.firstName" type="text" class="border border-gray-300 dark:border-gray-700 dark:bg-neutral-600 dark:text-gray-200 rounded p-2" />
-                    <FieldError :errors="r$.$errors.firstName" />
+                    <label required>Full Name</label>
+                    <input v-model="form.fullName" type="text" class="border border-gray-300 dark:border-gray-700 dark:bg-neutral-600 dark:text-gray-200 rounded p-2" />
+                    <FieldError :errors="r$.$errors.fullName" />
                 </div>
-                
-                <!-- Last Name -->
-                <div class="flex flex-col gap-2">
-                    <label required>Last Name</label>
-                    <input v-model="form.lastName" type="text" class="border border-gray-300 dark:border-gray-700 dark:bg-neutral-600 dark:text-gray-200 rounded p-2" />
-                    <FieldError :errors="r$.$errors.lastName" />
+            </div>
+
+            <!-- Children -->
+            <h3 class="font-semibold my-4">Children</h3>
+
+            <div v-for="(_, index) in form.children" class="border border-dashed border-gray-600 p-4 rounded-lg mt-4">
+                <h3 class="font-semibold uppercase text-xs text-gray-400 mb-3">
+                    Child {{ index + 1 }}
+                </h3>
+
+                <div class="grid grid-cols-2 gap-x-6 gap-y-4">
+                    <!-- Full Name -->
+                    <div class="flex flex-col gap-2">
+                        <label required>Full Name</label>
+                        <input v-model="form.children[index].fullName" type="text" class="border border-gray-300 dark:border-gray-700 dark:bg-neutral-600 dark:text-gray-200 rounded p-2" />
+                        <FieldError :errors="r$.$errors.children.$each[index].fullName" />
+                    </div>
+
+                    <!-- Age -->
+                    <div class="flex flex-col gap-2">
+                        <label required>Age</label>
+                        <input v-model="form.children[index].age" type="number" class="border border-gray-300 dark:border-gray-700 dark:bg-neutral-600 dark:text-gray-200 rounded p-2" />
+                        <FieldError :errors="r$.$errors.children.$each[index].age" />
+                    </div>
                 </div>
             </div>
 
@@ -21,11 +39,6 @@
                 <button type="submit" class="bg-green-800 text-white rounded py-2 px-5 hover:bg-green-900 transition hover:active:bg-green-950">
                     Submit
                 </button>
-
-                <!-- Secondary button to toggle condition -->
-                <button type="button" @click="condition = !condition" class="bg-gray-500 text-white rounded py-2 px-5 hover:bg-gray-900 transition hover:active:bg-gray-950 dark:bg-gray-700 dark:hover:bg-gray-800 dark:hover:active:bg-gray-900">
-                    Toggle Condition
-                </button> <span @click="condition = !condition">{{ condition }}</span>
             </div>
 
             <div v-if="isFormValid" class="mt-4 text-green-600">
@@ -38,26 +51,37 @@
 <script setup lang="ts">
     import { computed, ref } from 'vue'
     import FieldError from './components/FieldError.vue'
-    import { applyIf, minLength, required } from '@regle/rules'
+    import { minValue, minLength, required } from '@regle/rules'
     import { useRegle, type RegleComputedRules } from '@regle/core'
 
     const condition = ref(true)
     const isFormValid = ref(false)
 
     const form = ref({
-        firstName: '',
-        lastName: ''
+        fullName: '',
+        children: [
+            { fullName: '', age: 0 },
+            { fullName: '', age: 0 }
+        ]
     })
 
     const rules = computed(() => {
         return {
-            firstName: {
+            fullName: {
                 required,
-                minLength: applyIf(condition, minLength(10))
+                minLength: minLength(10),
             },
-            lastName: {
-                required,
-                minLength: applyIf(condition, minLength(15))
+            children: {
+                $each: {
+                    fullName: {
+                        required,
+                        minLength: minLength(10),
+                    },
+                    age: {
+                        required,
+                        minValue: minValue(5),
+                    }
+                }
             }
         } satisfies RegleComputedRules<typeof form>
     })
