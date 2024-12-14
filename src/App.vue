@@ -54,7 +54,6 @@
     import { minValue, minLength, required } from '@regle/rules'
     import { useRegle, type RegleComputedRules } from '@regle/core'
 
-    const condition = ref(true)
     const isFormValid = ref(false)
 
     const form = ref({
